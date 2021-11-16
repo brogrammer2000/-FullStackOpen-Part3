@@ -2,6 +2,10 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
+const morgan = require("morgan");
+
+// app.use(morgan("tiny"));
+
 let persons = [
   {
     id: 1,
@@ -30,15 +34,15 @@ const generateID = () => {
   return id;
 };
 
-app.get("/", (request, response) => {
+app.get("/", morgan("tiny"), (request, response) => {
   response.send("<h1> Hello World</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", morgan("tiny"), (request, response) => {
   response.json(persons);
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", morgan("tiny"), (request, response) => {
   const id = Number(request.params.id);
   const person = persons.find((p) => p.id === id);
 
@@ -49,33 +53,38 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", morgan("tiny"), (request, response) => {
   const id = Number(request.params.id);
   persons = persons.filter((p) => p.id !== id);
 
   response.status(204).end();
 });
 
-app.post("/api/persons", (request, response) => {
-  const body = request.body;
+app.post(
+  "/api/persons",
+  morgan(":method :url :status :res[content-length] - :response-time ms :body"),
+  (request, response) => {
+    const body = request.body;
+    morgan.token("body", (req) => JSON.stringify(req.body));
 
-  const newPerson = {
-    id: generateID(),
-    name: body.name,
-    number: body.number,
-  };
+    const newPerson = {
+      id: generateID(),
+      name: body.name,
+      number: body.number,
+    };
 
-  if (!body.name || !body.number) {
-    return response.status(400).json({ error: " name or number is missing" });
-  } else if (persons.some((p) => p.name === body.name)) {
-    return response.status(403).json({ error: " name must be unique" });
+    if (!body.name || !body.number) {
+      return response.status(400).json({ error: " name or number is missing" });
+    } else if (persons.some((p) => p.name === body.name)) {
+      return response.status(403).json({ error: " name must be unique" });
+    }
+
+    persons = persons.concat(newPerson);
+    response.json(newPerson);
   }
+);
 
-  persons = persons.concat(newPerson);
-  response.json(newPerson);
-});
-
-app.get("/info", (request, response) => {
+app.get("/info", morgan("tiny"), (request, response) => {
   const numberofpeople = persons.length;
   const date = new Date();
   response.send(`<p>Phonebook has info for ${numberofpeople} people</p>

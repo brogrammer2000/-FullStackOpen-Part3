@@ -4,6 +4,18 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
+const requestLogger = (request, response, next) => {
+  console.log("method: ", request.method);
+  console.log("path: ", request.path);
+  console.log("body: ", request.body);
+  console.log("---");
+  next();
+};
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
 let notes = [
   {
     id: 1,
@@ -24,10 +36,8 @@ let notes = [
     important: true,
   },
 ];
-// const app = http.createServer((request, response) => {
-//   response.writeHead(200, { "Content-Type": "application/json" });
-//   response.end(JSON.stringify(notes));
-// });
+
+app.use(requestLogger);
 
 app.get("/", (request, response) => {
   response.send("<h1> Hello World</h1>");
@@ -48,7 +58,7 @@ app.get("/api/notes/:id", (request, response) => {
   if (note) {
     response.json(note);
   } else {
-    response.status(404).end();
+    app.use(unknownEndpoint);
   }
 });
 
