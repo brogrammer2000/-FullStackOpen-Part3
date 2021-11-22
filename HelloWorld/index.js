@@ -1,8 +1,10 @@
 // const http = require("http");
-
 const express = require("express");
+const cors = require("cors");
 const app = express();
 app.use(express.json());
+app.use(cors());
+app.use(express.static("build"));
 
 const requestLogger = (request, response, next) => {
   console.log("method: ", request.method);
@@ -92,7 +94,7 @@ app.post("/api/notes", (request, response) => {
   response.json(note);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server runnning on port ${PORT}`);
 });
