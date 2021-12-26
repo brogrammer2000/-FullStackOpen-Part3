@@ -2,6 +2,10 @@ POST http://localhost:3001/api/notes/
 content-type: application/json
 
 {
-    "content": "we can use vscode instead of postman for requests",
+    "content": "testing after some time",
     "important": true
 }
+
+###########
+
+GET http://localhost:3001/api/notes/61af63579b5bae35ee290892
